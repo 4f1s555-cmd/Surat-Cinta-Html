@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Surat Cinta Digital</title>
+<style>
+:root{--bg:#fff1f3;--card:#ffffff;--tx:#3b1a24;--mut:#8a5a68;--pr:#e11d48;--pr2:#fb7185;--bd:#fecdd3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d0f14;--card:#2a1620;--tx:#ffe4ea;--mut:#d49aab;--pr:#fb7185;--pr2:#e11d48;--bd:#4a2433;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d0f14;--card:#2a1620;--tx:#ffe4ea;--mut:#d49aab;--pr:#fb7185;--pr2:#e11d48;--bd:#4a2433;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;overflow-x:hidden}
+main{max-width:480px;margin:0 auto;padding:24px 18px 48px;position:relative;z-index:1}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:28px;margin:8px 0 4px;text-align:center}
+.sub{text-align:center;color:var(--mut);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:20px;box-shadow:0 8px 30px rgba(225,29,72,.12)}
+label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
+input,textarea{width:100%;font:inherit;color:var(--tx);background:transparent;border:1.5px solid var(--bd);border-radius:12px;padding:12px}
+input:focus,textarea:focus{outline:2px solid var(--pr2);border-color:transparent}
+textarea{min-height:130px;resize:vertical}
+button{font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px 18px;cursor:pointer;background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;width:100%;margin-top:18px}
+button.alt{background:transparent;color:var(--pr);border:1.5px solid var(--pr)}
+.hint{font-size:12px;color:var(--mut);margin-top:4px}
+.link{word-break:break-all;font-size:13px;background:var(--bg);border:1px dashed var(--pr2);border-radius:12px;padding:12px;margin-top:10px;user-select:all}
+.hide{display:none!important}
+.letter{text-align:center}
+.env{font-size:72px;cursor:pointer;animation:bob 1.6s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-8px) scale(1.06)}}
+.to{font-family:Georgia,serif;font-size:24px;margin:6px 0 14px}
+.msg{white-space:pre-wrap;text-align:left;font-family:Georgia,serif;font-size:18px;line-height:1.7;margin:14px 0}
+.from{text-align:right;font-style:italic;color:var(--mut);font-family:Georgia,serif;font-size:18px}
+.ask{font-family:Georgia,serif;font-size:22px;margin:22px 0 4px}
+.row{display:flex;gap:10px;position:relative;min-height:56px;align-items:flex-start}
+.row button{margin-top:10px}
+#no{position:relative;transition:transform .2s}
+.heart{position:fixed;bottom:-30px;pointer-events:none;z-index:0;animation:up linear forwards}
+@keyframes up{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--pr);color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;z-index:5}
+.big{font-size:56px}
+</style>
+</head>
+<body>
+<main>
+  <!-- Mode pengirim -->
+  <section id="make">
+    <h1>💌 Surat Cinta Digital</h1>
+    <p class="sub">Buat kejutan romantis, lalu kirim lewat link.</p>
+    <div class="card">
+      <label for="from">Nama kamu (pengirim)</label>
+      <input id="from" maxlength="40" placeholder="Contoh: Raka" autocomplete="off">
+      <label for="to">Nama dia (penerima)</label>
+      <input id="to" maxlength="40" placeholder="Contoh: Nadia" autocomplete="off">
+      <label for="text">Kata-kata atau puisi romantis</label>
+      <textarea id="text" maxlength="700" placeholder="Tulis perasaanmu di sini…"></textarea>
+      <div class="hint"><span id="cnt">0</span>/700 karakter. <a href="#" id="sample" style="color:var(--pr)">Pakai contoh puisi</a></div>
+      <button id="gen">Buat Link Cinta 💖</button>
+    </div>
+    <div id="result" class="card hide" style="margin-top:16px">
+      <b>Link siap dikirim! 🎉</b>
+      <div class="link" id="linkbox"></div>
+      <button id="copy">Salin Link</button>
+      <button id="share" class="alt hide">Bagikan</button>
+      <button id="prev" class="alt">Lihat Pratinjau</button>
+    </div>
+  </section>
+
+  <!-- Mode penerima -->
+  <section id="view" class="hide">
+    <div class="card letter">
+      <div id="closed">
+        <div class="env" id="env">💌</div>
+        <p class="sub" style="margin-top:12px">Ada surat spesial untuk <b id="toC"></b>.<br>Ketuk amplopnya untuk membuka.</p>
+      </div>
+      <div id="open" class="hide">
+        <div class="to">Untuk <span id="toO"></span> 💕</div>
+        <div class="msg" id="msg"></div>
+        <div class="from">— <span id="fromO"></span></div>
+        <div id="askbox">
+          <div class="ask">Maukah kamu jadi milikku?</div>
+          <div class="row">
+            <button id="yes">Mau 💖</button>
+            <button id="no" class="alt">Pikir dulu</button>
+          </div>
+        </div>
+        <div id="yay" class="hide">
+          <div class="big">🥰🎉</div>
+          <div class="ask">Yeay! <span id="yayTo"></span> bilang “Mau”!</div>
+          <p class="sub">Kabari <b id="yayFrom"></b> sekarang ya 💞</p>
+        </div>
+      </div>
+    </div>
+    <button id="mine" class="alt" style="margin-top:18px">Buat suratmu sendiri</button>
+  </section>
+</main>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var SAMPLE="Di antara ribuan wajah yang kutemui,\nhanya senyummu yang tinggal di hati.\nBersamamu, hari biasa jadi istimewa,\ndan sunyi pun terdengar seperti nada.\n\nAku tak pandai merangkai kata,\ntapi aku tahu satu hal pasti:\naku ingin pulang kepadamu, setiap hari.";
+
+  function enc(o){
+    var b=new TextEncoder().encode(JSON.stringify(o)),s="";
+    for(var i=0;i<b.length;i++)s+=("0"+b[i].toString(16)).slice(-2);
+    return s;
+  }
+  function dec(h){
+    try{
+      if(!/^[0-9a-f]+$/.test(h)||h.length%2)return null;
+      var b=new Uint8Array(h.length/2);
+      for(var i=0;i<b.length;i++)b[i]=parseInt(h.substr(i*2,2),16);
+      var o=JSON.parse(new TextDecoder().decode(b));
+      return o&&typeof o.f==="string"?o:null;
+    }catch(e){return null}
+  }
+  function base(){return location.href.split("#")[0]}
+  function toast(t){
+    var d=document.createElement("div");d.className="toast";d.textContent=t;
+    document.body.appendChild(d);setTimeout(function(){d.remove()},1800);
+  }
+  function hearts(n){
+    var e=["💖","💕","💗","❤️","💘"];
+    for(var i=0;i<n;i++)(function(i){setTimeout(function(){
+      var h=document.createElement("span");h.className="heart";
+      h.textContent=e[i%e.length];
+      h.style.left=Math.random()*95+"vw";
+      h.style.fontSize=(16+Math.random()*24)+"px";
+      h.style.animationDuration=(4+Math.random()*4)+"s";
+      document.body.appendChild(h);setTimeout(function(){h.remove()},8500);
+    },i*140)})(i);
+  }
+
+  var data=dec((location.hash||"").slice(1));
+  function show(d,preview){
+    $("make").classList.add("hide");$("view").classList.remove("hide");
+    $("toC").textContent=d.t||"kamu";$("toO").textContent=d.t||"kamu";
+    $("fromO").textContent=d.f;$("msg").textContent=d.m||"";
+    $("yayTo").textContent=d.t||"Dia";$("yayFrom").textContent=d.f;
+    $("closed").classList.remove("hide");$("open").classList.add("hide");
+    $("askbox").classList.remove("hide");$("yay").classList.add("hide");
+    $("mine").textContent=preview?"← Kembali mengedit":"Buat suratmu sendiri";
+    $("mine").onclick=function(){
+      if(preview){$("view").classList.add("hide");$("make").classList.remove("hide")}
+      else{try{history.replaceState(null,"",base())}catch(e){}location.reload()}
+    };
+    $("env").onclick=function(){
+      $("closed").classList.add("hide");$("open").classList.remove("hide");hearts(14);
+    };
+  }
+  if(data)show(data,false);
+
+  var n=0;
+  $("no").addEventListener("pointerenter",dodge);
+  $("no").addEventListener("click",dodge);
+  function dodge(e){
+    e.preventDefault();n++;
+    var b=$("no");
+    b.style.transform="translate("+((Math.random()-.5)*120)+"px,"+((Math.random()-.5)*70)+"px)";
+    if(n>2)b.textContent=["Yakin?","Coba lagi 🥺","Hati-hati ya…","Klik Mau aja 😘"][Math.min(n-3,3)];
+  }
+  $("yes").onclick=function(){
+    $("askbox").classList.add("hide");$("yay").classList.remove("hide");hearts(40);
+  };
+
+  $("text").oninput=function(){$("cnt").textContent=this.value.length};
+  $("sample").onclick=function(e){e.preventDefault();$("text").value=SAMPLE;$("cnt").textContent=SAMPLE.length};
+
+  var cur=null;
+  $("gen").onclick=function(){
+    var f=$("from").value.trim(),t=$("to").value.trim(),m=$("text").value.trim();
+    if(!f||!t){toast("Isi nama pengirim & penerima dulu ya");return}
+    cur={f:f,t:t,m:m};
+    var url=base()+"#"+enc(cur);
+    $("linkbox").textContent=url;
+    $("result").classList.remove("hide");
+    $("share").classList.toggle("hide",!navigator.share);
+    $("result").scrollIntoView({behavior:"smooth"});
+  };
+  $("copy").onclick=function(){
+    var u=$("linkbox").textContent;
+    function ok(){toast("Link tersalin ✓")}
+    function fb(){
+      var r=document.createRange();r.selectNodeContents($("linkbox"));
+      var s=getSelection();s.removeAllRanges();s.addRange(r);
+      try{document.execCommand("copy");ok()}catch(e){toast("Tekan lama link untuk menyalin")}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,fb);else fb();
+  };
+  $("share").onclick=function(){
+    navigator.share({title:"Ada pesan untukmu 💌",text:"Ada surat spesial untukmu 💌",url:$("linkbox").textContent}).catch(function(){});
+  };
+  $("prev").onclick=function(){if(cur)show(cur,true)};
+})();
+</script>
+</body>
+</html>
